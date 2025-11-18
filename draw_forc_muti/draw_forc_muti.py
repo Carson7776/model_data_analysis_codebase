@@ -1,76 +1,92 @@
 "force on the boundary - timerelationship"
+#inorder to run this program, the forc file need to be download to where this program is
+#download forc file named as the following: GRm**_forc,,,
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
-"setting param"
+
+"store forc file from different model to forc dict"
+forc = {}
 
 
-"writing file"
-forc_GRm11_r01 = np.load('GRm11_r01_forc.npy')
-forc_GRm12_r02 = np.load('GRm12_r02_forc.npy')
-forc_GRm13_r03 = np.load('GRm13_r03_forc.npy')
-
-
-
-
-
-"GRm11"
-GRm11_time_forc= forc_GRm11_r01[:,[1,3]]
-GRm12_time_forc= forc_GRm12_r02[:,[1,3]]
-GRm13_time_forc= forc_GRm13_r03[:,[1,3]]
-
-"extract time from GRm**_time, with fixed threshold(t = 0.01Myr)"
-#inorder to compair different model with the same timestep
-#because the size of the time array of orginal data is different for each mode
-threshold = float(0.01) #10 kyr
-
-GRm11_current_time = GRm11_time_forc[0,0]
-GRm12_current_time = GRm12_time_forc[0,0]
-GRm13_current_time = GRm13_time_forc[0,0]
-
-GRm11_time_forc_r = []
-GRm12_time_forc_r = []
-GRm13_time_forc_r = []
-
-"getting 1st vaule > threshold"
-for row in GRm11_time_forc:
+"read forc.0 file into program"
+files = sorted(glob.glob("GRm*"))
+for filename in files:
+#    print("Reading:", filename)
+    forc[filename] = np.loadtxt(filename)
+        
     
-    if row[0] >= GRm11_current_time:
-        
-        time_round =np.round(row[0]/threshold) * threshold
-        GRm11_time_forc_r.append([time_round,row[1]])    
-        GRm11_current_time = GRm11_current_time + threshold 
-        
-for row in GRm12_time_forc:
+def user_input_model():
+    user_input = input("please input the models you with to draw")
+    return user_input
+
+def extract_values(user_input):
+    keys = user_input.split()
+    return keys
+
+def t_forc_r(keys, user_input):
     
-    if row[0] >= GRm12_current_time:
-        
-        time_round =np.round(row[0]/threshold) * threshold
-        GRm12_time_forc_r.append([time_round,row[1]])    
-        GRm12_current_time = GRm12_current_time + threshold 
-        
-for row in GRm13_time_forc:
+    plt.figure()
+    #set colors for the line to be draw, maximum = 3 colors
+    color = ["red","green","blue"]
+    color_index = 0
+    for key in keys:
+        #initial arrays to prvent previous valuses 
+        arr = np.array([])
+        time = np.array([])
+        forc_l = np.array([])
+        forc_r = np.array([])
+        #select the model, to plot
+        if key in forc:
+            arr = forc[key]
+            time = arr[:,1]
+            forc_l = arr[:,2]
+            forc_r = arr[:,3]
+            #time_force_right_boundary
+            plt.plot(time, forc_r,color = color[color_index], label = key)
+            plt.title(f"{user_input}")
+            plt.xlabel("time(Myr)")
+            plt.ylabel("force right boundary")
+            #set the upper limit of the force(top),according to the maximum force you see on graph
+            plt.ylim(top = 2.0*(10**13))
+            plt.legend()
+            plt.savefig(f"output/{user_input}_time_right_boundary_force.png")
+            #change the color for the next line
+            color_index = color_index + 1
+def t_forc_l(keys, user_input):
     
-    if row[0] >= GRm13_current_time:
-        
-        time_round =np.round(row[0]/threshold) * threshold
-        GRm13_time_forc_r.append([time_round,row[1]])    
-        GRm13_current_time = GRm13_current_time + threshold 
+    plt.figure()
+    #set colors for the line to be draw, maximum = 3 colors
+    color = ["r","g","b"]
+    color_index = 0
+    for key in keys:
+        #initial arrays to prvent previous valuses 
+        arr = np.array([])
+        time = np.array([])
+        forc_l = np.array([])
+        forc_r = np.array([])
+        #select the model, to plot
+        if key in forc:
+            arr = forc[key]
+            time = arr[:,1]
+            forc_l = arr[:,2]
+            forc_r = arr[:,3]
+            #time_force_left_boundary
+            plt.plot(time, forc_l, color = color[color_index], label = key)
+            plt.title(f"{user_input}")    
+            plt.xlabel("time(Myr)")
+            plt.ylabel("force left boundary")
+            #set the upper limit of the force(top),according to the maximum force you see on graph
+            plt.ylim(top = 2.0*(10**13))
+            plt.legend()
+            plt.savefig(f"output/{user_input}_time_left_boundary_force.png")
+            #change the color for the next line
+            color_index = color_index + 1
+            
+"main program"
 
-
-GRm11_time_forc_r = np.array(GRm11_time_forc_r, dtype = float)  #this code can be written in a cleaner fashio        
-GRm12_time_forc_r = np.array(GRm12_time_forc_r, dtype = float)
-GRm13_time_forc_r = np.array(GRm13_time_forc_r, dtype = float)        
-         
-"GRm11"
-
-plt.plot(GRm11_time_forc_r[:,0],GRm11_time_forc_r[:,1], color='r')
-"GRm12"
-
-plt.plot(GRm12_time_forc_r[:,0],GRm12_time_forc_r[:,1], color='b')
-
-"GRm13"
-plt.plot(GRm13_time_forc_r[:,0],GRm13_time_forc_r[:,1], color='g')
-
-
-
+user_input = user_input_model()
+keys = extract_values(user_input)
+t_forc_r(keys,user_input)
+t_forc_l(keys,user_input)
 
