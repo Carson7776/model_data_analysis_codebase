@@ -7,6 +7,7 @@ Host="140.109.81.186"
 
 #path
 remote_path="/scratch2/humaorong"
+#change depending on which pc
 local_path="/drives/C/Users/carso/model_download_file"
 
 #choose folder to download
@@ -16,9 +17,12 @@ read  -a folder
 #run scp to download folder
 for folder in "${folder[@]}"
 do
-        #create folder at local
-        mkdir -p "${local_path}/${folder}"
-        scp -r  ${User}@${Host}:${remote_path}/${folder}  ${local_path}/${folder}
+	#create folder at local
+	mkdir -p "${local_path}/${folder}"
+	#create figure folder to save graphs
+	mkdir -p "${local_path}/${folder}/figure"
+	scp -r  ${User}@${Host}:${remote_path}/${folder}  ${local_path}/${folder}
 done
 
 echo "fininsh downloading folder"
+
